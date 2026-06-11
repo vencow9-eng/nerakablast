@@ -1,0 +1,42 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+*{
+margin:0;
+padding:0;
+box-sizing:border-box;
+}
+
+body{
+background:#020617;
+color:white;
+
+font-family:
+Inter,
+sans-serif;
+}
+
+button{
+cursor:pointer;
+}
+
+input,
+textarea,
+select{
+
+outline:none;
+
+border:none;
+
+background:#0f172a;
+
+color:white;
+
+border-radius:14px;
+}
+
+a{
+text-decoration:none;
+color:white;
+}

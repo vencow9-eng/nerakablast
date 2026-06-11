@@ -1,0 +1,42 @@
+# ENV
+.env
+.env.local
+
+# NODE
+node_modules/
+
+# BUILD
+dist/
+build/
+
+# LOG
+logs/
+*.log
+
+# PM2
+.pm2/
+
+# PRISMA
+prisma/dev.db
+
+# STORAGE
+backend/storage/sessions/
+backend/storage/uploads/
+
+# CACHE
+.cache/
+
+# IDE
+.vscode/
+.idea/
+
+# OS
+Thumbs.db
+.DS_Store
+
+# TEMP
+tmp/
+temp/
+
+# REDIS
+dump.rdb
