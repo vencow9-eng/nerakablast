@@ -122,20 +122,20 @@ const menus = allMenus.filter((m) => m.roles.includes(user.role));
           </Link>
         </header>
 
-        <main className="p-5 lg:p-10 pb-28 overflow-x-hidden">
+          <main className="app-content p-5 lg:p-10 pb-28 overflow-x-hidden">
           <Outlet />
         </main>
       </section>
 
-      <nav className="lg:hidden fixed bottom-0 left-0 right-0 z-50 bg-slate-900 border-t border-slate-800 grid grid-cols-5 px-2 py-2">
+        <nav className="app-mobile-nav lg:hidden fixed bottom-0 left-0 right-0 z-50 grid grid-cols-5">
         {menus.slice(0, 5).map((m) => (
           <Link
             key={m.to}
             to={m.to}
             className={`flex flex-col items-center justify-center gap-1 py-2 rounded-xl text-[11px] ${
               location.pathname === m.to
-                ? "bg-slate-800 text-green-400"
-                : "text-slate-400"
+              ? "app-menu-active"
+              : "app-menu-link"
             }`}
           >
             <span className="text-lg">{m.icon}</span>
