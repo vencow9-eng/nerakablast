@@ -15,6 +15,35 @@ async function list(userId) {
   });
 }
 
+async function adminList() {
+  return prisma.blast.findMany({
+    include: {
+      user: {
+        select: {
+          username: true,
+          role: true,
+        },
+      },
+
+      template: {
+        select: {
+          title: true,
+        },
+      },
+
+      target: {
+        select: {
+          name: true,
+        },
+      },
+    },
+
+    orderBy: {
+      createdAt: "desc",
+    },
+  });
+}
+
 async function stats(userId) {
   const rows = await prisma.blast.findMany({
     where: {
@@ -25,31 +54,42 @@ async function stats(userId) {
   return {
     totalBlast: rows.length,
 
-    success: rows.reduce(
-      (a, b) => a + (b.success || 0),
-      0
-    ),
+    success:
+      rows.reduce(
+        (a, b) =>
+          a + (b.success || 0),
+        0
+      ),
 
-    failed: rows.reduce(
-      (a, b) => a + (b.failed || 0),
-      0
-    ),
+    failed:
+      rows.reduce(
+        (a, b) =>
+          a + (b.failed || 0),
+        0
+      ),
 
-    pending: rows.filter(
-      (x) => x.status === "PENDING"
-    ).length,
+    pending:
+      rows.filter(
+        (x) =>
+          x.status === "PENDING"
+      ).length,
 
-    completed: rows.filter(
-      (x) => x.status === "COMPLETED"
-    ).length,
+    completed:
+      rows.filter(
+        (x) =>
+          x.status === "COMPLETED"
+      ).length,
 
-    stopped: rows.filter(
-      (x) => x.status === "STOPPED"
-    ).length,
+    stopped:
+      rows.filter(
+        (x) =>
+          x.status === "STOPPED"
+      ).length,
   };
 }
 
 module.exports = {
   list,
+  adminList,
   stats,
 };

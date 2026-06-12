@@ -9,6 +9,15 @@ async function list(req, res) {
   });
 }
 
+async function adminList(req, res) {
+  try {
+    const data = await service.adminList();
+    res.json({ success: true, data });
+  } catch (err) {
+    res.status(400).json({ success: false, message: err.message });
+  }
+}
+
 async function create(req, res) {
   const data = await service.create(req.user.id);
 
@@ -27,8 +36,9 @@ async function remove(req, res) {
   });
 }
 
-module.exports = {
+module.exports = { 
   list,
+  adminList,
   create,
   remove,
 };

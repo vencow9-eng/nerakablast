@@ -29,6 +29,7 @@ app.get("/health", (req, res) => {
 app.use(errorHandler);
 app.use("/dashboard", dashboardRoute);
 app.use("/auth", authRoute);
+app.use("/settings", require("./modules/settings/route"));
 app.use("/users", usersRoute);
 app.use("/staff", staffRoute);
 app.use("/templates", templatesRoute);

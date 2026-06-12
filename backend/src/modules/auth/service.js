@@ -1,8 +1,15 @@
 const prisma = require("../../config/database");
 const bcrypt = require("bcryptjs");
 const jwt = require("jsonwebtoken");
+const settingsService = require("../settings/service");
 
 async function register(data) {
+  const settings = await settingsService.getSettings();
+
+  if (!settings.allowRegister) {
+    throw new Error("Pendaftaran sedang ditutup");
+  }
+
   let parentId = null;
 
   if (data.staffUsername) {
