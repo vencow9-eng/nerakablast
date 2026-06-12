@@ -12,6 +12,11 @@ import Targets from "../pages/member/Targets";
 import Blast from "../pages/member/Blast";
 import Reports from "../pages/member/Reports";
 
+import Users from "../pages/admin/Users";
+import AdminDevices from "../pages/admin/Devices";
+import AdminReports from "../pages/admin/Reports";
+import Settings from "../pages/admin/Settings";
+
 function Protected({ children }) {
   const token = localStorage.getItem("token");
 
@@ -19,20 +24,59 @@ function Protected({ children }) {
     return <Navigate to="/login" replace />;
   }
 
+  let user = {};
+  let settings = {};
+
+  try {
+    user = JSON.parse(localStorage.getItem("user") || "{}");
+  } catch {}
+
+  try {
+    settings = JSON.parse(
+      localStorage.getItem("sewawapro_settings_cache") || "{}"
+    );
+  } catch {}
+
+  const isAdmin = user.role === "ADMIN";
+  const maintenance = settings.maintenanceMode === true;
+
+if (maintenance && user.role === "MEMBER") {
+  return <MaintenancePage />;
+}
+
   return children;
+}
+
+function MaintenancePage() {
+  return (
+    <div className="min-h-screen bg-slate-950 text-white flex items-center justify-center p-6">
+      <div className="bg-slate-900 border border-slate-800 rounded-3xl p-8 max-w-md text-center">
+        <img
+          src="/assets/logo.png"
+          alt="SEWAWAPRO"
+          className="h-12 mx-auto mb-6 object-contain"
+        />
+
+        <h1 className="text-3xl font-black mb-3">Maintenance Mode</h1>
+
+        <p className="text-slate-400">
+          Sistem sedang dalam peningkatan. Silakan coba lagi beberapa saat lagi.
+        </p>
+      </div>
+    </div>
+  );
 }
 
 export default function Router() {
   return (
     <BrowserRouter>
       <Routes>
-
         {/* PUBLIC */}
         <Route path="/" element={<Navigate to="/login" replace />} />
         <Route path="/login" element={<Login />} />
         <Route path="/register" element={<Register />} />
 
-        {/* MEMBER */}
+        {/* DASHBOARD */}
         <Route
           element={
             <Protected>
@@ -41,6 +85,14 @@ export default function Router() {
           }
         >
           <Route path="/dashboard" element={<Dashboard />} />
+
+          {/* ADMIN */}
+          <Route path="/users" element={<Users />} />
+          <Route path="/admin-devices" element={<AdminDevices />} />
+          <Route path="/admin-reports" element={<AdminReports />} />
+          <Route path="/settings" element={<Settings />} />
+
+          {/* MEMBER / SHARED */}
           <Route path="/whatsapp" element={<Devices />} />
           <Route path="/templates" element={<Templates />} />
           <Route path="/targets" element={<Targets />} />
@@ -50,7 +102,6 @@ export default function Router() {
 
         {/* FALLBACK */}
         <Route path="*" element={<Navigate to="/dashboard" replace />} />
-
       </Routes>
     </BrowserRouter>
   );

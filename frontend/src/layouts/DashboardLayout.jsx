@@ -34,10 +34,14 @@ export default function DashboardLayout() {
 const allMenus = [
   { to: "/dashboard", label: "Dashboard", icon: "🏠", roles: ["ADMIN", "STAFF", "MEMBER"] },
   { to: "/whatsapp", label: "WhatsApp", icon: "📱", roles: ["ADMIN", "STAFF", "MEMBER"] },
+  { to: "/users", label: "Users", icon: "👥", roles: ["ADMIN"] },
+  { to: "/admin-devices", label: "Admin Devices", icon: "📡", roles: ["ADMIN"] },
+  { to: "/admin-reports", label: "Admin Reports", icon: "📈", roles: ["ADMIN"] },
   { to: "/templates", label: "Templates", icon: "📝", roles: ["ADMIN", "STAFF"] },
   { to: "/targets", label: "Targets", icon: "🎯", roles: ["ADMIN", "STAFF"] },
   { to: "/blast", label: "Blast", icon: "🚀", roles: ["ADMIN", "STAFF", "MEMBER"] },
   { to: "/reports", label: "Reports", icon: "📊", roles: ["ADMIN", "STAFF", "MEMBER"] },
+  { to: "/settings", label: "Settings", icon: "⚙️", roles: ["ADMIN"] },
 ];
 
 const menus = allMenus.filter((m) => m.roles.includes(user.role));

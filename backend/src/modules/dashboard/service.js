@@ -2,44 +2,69 @@ const prisma = require("../../config/database");
 
 async function admin() {
   const totalUser = await prisma.user.count();
-  const totalStaff = await prisma.user.count({
-    where: { isStaff: true },
+  const totalMember = await prisma.user.count({
+    where: { role: "MEMBER" },
+  });
+  const totalAdmin = await prisma.user.count({
+    where: { role: "ADMIN" },
   });
   const totalBlast = await prisma.blast.count();
   const totalDevice = await prisma.device.count();
+  const connectedDevice = await prisma.device.count({
+    where: { status: "CONNECTED" },
+  });
 
-  const blasts = await prisma.blast.findMany();
+  const blasts = await prisma.blast.findMany({
+    include: {
+      user: true,
+      template: true,
+      target: true,
+    },
+    orderBy: { id: "desc" },
+    take: 10,
+  });
+
+  const success = blasts.reduce((a, b) => a + (b.success || 0), 0);
+  const failed = blasts.reduce((a, b) => a + (b.failed || 0), 0);
+  const totalSent = success + failed;
+
+  const runningBlast = await prisma.blast.count({
+    where: { status: "RUNNING" },
+  });
+
+  const completedBlast = await prisma.blast.count({
+    where: { status: "COMPLETED" },
+  });
+
+  const failedBlast = await prisma.blast.count({
+    where: { status: "FAILED" },
+  });
 
   return {
     totalUser,
-    totalStaff,
+    totalMember,
+    totalAdmin,
     totalBlast,
     totalDevice,
+    connectedDevice,
+    runningBlast,
+    completedBlast,
+    failedBlast,
     totalRevenue: 0,
-    success: blasts.reduce((a, b) => a + b.success, 0),
-    failed: blasts.reduce((a, b) => a + b.failed, 0),
-  };
-}
-
-async function staff(userId) {
-  const totalMember = await prisma.user.count({
-    where: { parentId: userId },
-  });
-  const totalTemplate = await prisma.template.count({
-    where: { ownerId: userId },
-  });
-  const totalTarget = await prisma.target.count({
-    where: { ownerId: userId },
-  });
-  const totalBlast = await prisma.blast.count({
-    where: { userId },
-  });
-
-  return {
-    totalMember,
-    totalTemplate,
-    totalTarget,
-    totalBlast,
+    success,
+    failed,
+    totalSent,
+    recentBlasts: blasts.map((b) => ({
+      id: b.id,
+      user: b.user?.username || "-",
+      template: b.template?.title || "-",
+      target: b.target?.name || "-",
+      total: b.total,
+      success: b.success,
+      failed: b.failed,
+      status: b.status,
+      createdAt: b.createdAt,
+    })),
   };
 }
 
@@ -55,16 +80,18 @@ async function member(userId) {
     },
   });
 
+  const totalSuccess = blasts.reduce((a, b) => a + (b.success || 0), 0);
+  const totalFailed = blasts.reduce((a, b) => a + (b.failed || 0), 0);
+
   return {
     totalBlastHariIni: blasts.length,
-    totalSuccess: blasts.reduce((a, b) => a + b.success, 0),
-    totalFailed: blasts.reduce((a, b) => a + b.failed, 0),
+    totalSuccess,
+    totalFailed,
     whatsappConnected: connected,
   };
 }
 
 module.exports = {
   admin,
-  staff,
   member,
 };
