@@ -1,14 +1,12 @@
 import { useEffect, useState } from "react";
 import api from "../../services/api";
+import { AppCard, AppButton, PageHeader } from "../../components/ui";
 
 export default function Settings() {
   const [settings, setSettings] = useState({
     platformName: "SEWAWAPRO",
     maintenanceMode: false,
     allowRegister: true,
-    defaultDelay: "medium",
-    autoReconnect: true,
-    maxTarget: 500,
   });
 
   async function load() {
@@ -45,117 +43,58 @@ export default function Settings() {
 
   return (
     <div className="space-y-6 pb-28">
-      <div>
-        <h1 className="text-3xl md:text-5xl font-black">Admin Settings</h1>
-        <p className="text-slate-400 mt-2">
-          Pusat kontrol sistem SEWAWAPRO.
-        </p>
-      </div>
+      <PageHeader
+        title="Admin Settings"
+        subtitle="Pusat kontrol sistem SEWAWAPRO."
+      />
 
-      <Section title="General">
-        <Input
-          label="Platform Name"
-          value={settings.platformName}
-          onChange={(v) => update("platformName", v)}
-        />
+      <AppCard>
+        <h2 className="text-xl font-black mb-5">General</h2>
 
-        <Toggle
-          label="Maintenance Mode"
-          value={settings.maintenanceMode}
-          onChange={(v) => update("maintenanceMode", v)}
-        />
+        <div className="space-y-4">
+          <Input
+            label="Platform Name"
+            value={settings.platformName}
+            onChange={(v) => update("platformName", v)}
+          />
 
-        <Toggle
-          label="Public Register"
-          value={settings.allowRegister}
-          onChange={(v) => update("allowRegister", v)}
-        />
-      </Section>
+          <Toggle
+            label="Maintenance Mode"
+            value={settings.maintenanceMode}
+            onChange={(v) => update("maintenanceMode", v)}
+          />
 
-      <Section title="Blast Rules">
-        <Select
-          label="Default Speed"
-          value={settings.defaultDelay}
-          onChange={(v) => update("defaultDelay", v)}
-          options={[
-            { value: "slow", label: "Slow" },
-            { value: "medium", label: "Medium" },
-            { value: "fast", label: "Fast" },
-            { value: "very_fast", label: "Very Fast" },
-          ]}
-        />
+          <Toggle
+            label="Public Register"
+            value={settings.allowRegister}
+            onChange={(v) => update("allowRegister", v)}
+          />
+        </div>
+      </AppCard>
 
-        <Input
-          label="Max Target Per Blast"
-          value={settings.maxTarget}
-          onChange={(v) => update("maxTarget", Number(v))}
-          type="number"
-        />
-      </Section>
-
-      <Section title="WhatsApp">
-        <Toggle
-          label="Auto Reconnect"
-          value={settings.autoReconnect}
-          onChange={(v) => update("autoReconnect", v)}
-        />
-      </Section>
-
-      <button
-        onClick={save}
-        className="w-full bg-green-500 hover:bg-green-600 rounded-2xl p-5 font-black"
-      >
+      <AppButton onClick={save} className="w-full">
         Simpan Settings Global
-      </button>
+      </AppButton>
     </div>
   );
 }
 
-function Section({ title, children }) {
-  return (
-    <div className="bg-slate-900 border border-slate-800 rounded-3xl p-5 space-y-4">
-      <h2 className="text-xl font-black">{title}</h2>
-      {children}
-    </div>
-  );
-}
-
-function Input({ label, value, onChange, type = "text" }) {
+function Input({ label, value, onChange }) {
   return (
     <label className="block">
       <p className="text-slate-400 text-sm mb-2">{label}</p>
       <input
-        type={type}
         value={value}
         onChange={(e) => onChange(e.target.value)}
-        className="w-full bg-slate-800 border border-slate-700 rounded-2xl p-4 outline-none focus:border-green-500"
+        placeholder={label}
       />
-    </label>
-  );
-}
-
-function Select({ label, value, onChange, options }) {
-  return (
-    <label className="block">
-      <p className="text-slate-400 text-sm mb-2">{label}</p>
-      <select
-        value={value}
-        onChange={(e) => onChange(e.target.value)}
-        className="w-full bg-slate-800 border border-slate-700 rounded-2xl p-4 outline-none focus:border-green-500"
-      >
-        {options.map((x) => (
-          <option key={x.value} value={x.value}>
-            {x.label}
-          </option>
-        ))}
-      </select>
     </label>
   );
 }
 
 function Toggle({ label, value, onChange }) {
   return (
-    <div className="flex items-center justify-between bg-slate-800 rounded-2xl p-4">
+    <div className="bg-slate-800 rounded-2xl p-4 flex items-center justify-between">
       <span className="font-bold">{label}</span>
 
       <button

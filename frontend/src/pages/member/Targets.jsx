@@ -123,12 +123,12 @@ export default function Targets() {
       </div>
 
       <div className="grid grid-cols-2 gap-4">
-        <div className="bg-slate-900 border border-slate-800 rounded-3xl p-5">
+        <div className="app-card">
           <p className="text-slate-400 text-sm">Total Target</p>
           <h1 className="text-4xl font-black mt-2">{targets.length}</h1>
         </div>
 
-        <div className="bg-slate-900 border border-slate-800 rounded-3xl p-5">
+        <div className="app-card">
           <p className="text-slate-400 text-sm">Total Nomor</p>
           <h1 className="text-4xl font-black mt-2">{totalPhones}</h1>
         </div>
@@ -141,7 +141,7 @@ export default function Targets() {
           value={name}
           onChange={(e) => setName(e.target.value)}
           placeholder="Nama target, contoh: Customer Hari Ini"
-          className="w-full bg-slate-800 border border-slate-700 rounded-2xl p-4 outline-none focus:border-green-500"
+          className="w-full"
         />
 
         <textarea
@@ -156,7 +156,7 @@ export default function Targets() {
           <button
             onClick={create}
             disabled={loading}
-            className="w-full bg-green-500 hover:bg-green-600 disabled:bg-slate-700 rounded-2xl p-4 font-black"
+            className="w-full app-btn app-btn-primary"
           >
             {loading ? "Menyimpan..." : "Simpan Manual"}
           </button>
@@ -220,13 +220,13 @@ export default function Targets() {
 
                   <button
                     onClick={() => remove(t.id)}
-                    className="shrink-0 bg-red-500 hover:bg-red-600 px-4 py-3 rounded-xl font-bold text-sm"
+                   className="shrink-0 app-btn app-btn-danger text-sm"
                   >
                     Hapus
                   </button>
                 </div>
 
-                <div className="mt-4 max-h-[180px] overflow-auto bg-slate-800 rounded-2xl p-3 text-sm text-slate-300 break-words">
+                <div className="mt-4 max-h-[180px] overflow-auto app-soft text-sm text-slate-300 break-words break-words">
                   {t.phones}
                 </div>
               </div>

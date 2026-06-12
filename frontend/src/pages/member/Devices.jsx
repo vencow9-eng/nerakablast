@@ -392,15 +392,18 @@ export default function Devices() {
 }
 
 function Status({ status }) {
-  const cls =
-    status === "CONNECTED"
-      ? "bg-green-500/20 text-green-400"
-      : status === "CONNECTING"
-      ? "bg-yellow-500/20 text-yellow-400"
-      : "bg-red-500/20 text-red-400";
+  let cls = "app-badge";
+
+  if (status === "CONNECTED") {
+    cls += " app-badge-success";
+  } else if (status === "CONNECTING") {
+    cls += " bg-yellow-500/20 text-yellow-300";
+  } else {
+    cls += " app-badge-danger";
+  }
 
   return (
-    <span className={`inline-block px-3 py-1 rounded-full text-xs font-black ${cls}`}>
+    <span className={cls}>
       {status || "DISCONNECTED"}
     </span>
   );

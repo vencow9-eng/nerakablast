@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import api from "../../services/api";
+import { AppCard, AppButton, PageHeader } from "../../components/ui";
 
 export default function Blast() {
   const [templates, setTemplates] = useState([]);
@@ -38,13 +39,11 @@ export default function Blast() {
         setTargetId(String(targetData[0].id));
       }
 
-      const running = reportData.find((x) => x.status === "RUNNING" || x.status === "PENDING");
+      const running = reportData.find(
+        (x) => x.status === "RUNNING" || x.status === "PENDING"
+      );
 
-      if (running) {
-        setRunningId(running.id);
-      } else {
-        setRunningId(null);
-      }
+      setRunningId(running ? running.id : null);
     } catch (e) {
       console.log(e);
     }
@@ -118,14 +117,12 @@ export default function Blast() {
 
   return (
     <div className="space-y-6 pb-28 overflow-x-hidden">
-      <div>
-        <h1 className="text-3xl sm:text-5xl font-black">Blast</h1>
-        <p className="text-slate-400 text-sm mt-1">
-          Tekan tombol untuk menjalankan blast dari WhatsApp kamu
-        </p>
-      </div>
+      <PageHeader
+        title="Blast"
+        subtitle="Tekan tombol untuk menjalankan blast dari WhatsApp kamu"
+      />
 
-      <div className="bg-slate-900 border border-slate-800 rounded-3xl p-5 space-y-5">
+      <AppCard>
         <div
           className={
             runningId
@@ -144,7 +141,7 @@ export default function Blast() {
           </p>
         </div>
 
-        <div>
+        <div className="mt-5">
           <label className="block text-sm font-bold mb-2">
             Kecepatan Blast
           </label>
@@ -153,7 +150,7 @@ export default function Blast() {
             value={speed}
             onChange={(e) => setSpeed(e.target.value)}
             disabled={!!runningId}
-            className="w-full bg-slate-800 border border-slate-700 rounded-xl p-4 outline-none focus:border-green-500 disabled:opacity-60"
+            className="disabled:opacity-60"
           >
             {speedOptions.map((s) => (
               <option key={s.value} value={s.value}>
@@ -168,8 +165,8 @@ export default function Blast() {
           disabled={loading || (!ready && !runningId)}
           className={
             runningId
-              ? "w-full bg-red-500 hover:bg-red-600 disabled:bg-slate-700 disabled:text-slate-400 rounded-2xl p-5 font-black text-lg"
-              : "w-full bg-green-500 hover:bg-green-600 disabled:bg-slate-700 disabled:text-slate-400 rounded-2xl p-5 font-black text-lg"
+              ? "w-full bg-red-500 hover:bg-red-600 disabled:bg-slate-700 disabled:text-slate-400 rounded-2xl p-5 font-black text-lg mt-5"
+              : "w-full bg-green-500 hover:bg-green-600 disabled:bg-slate-700 disabled:text-slate-400 rounded-2xl p-5 font-black text-lg mt-5"
           }
         >
           {loading
@@ -178,17 +175,18 @@ export default function Blast() {
             ? "⛔ Stop Blast"
             : "🚀 Mulai Blast Sekarang"}
         </button>
-      </div>
+      </AppCard>
 
       {!ready && (
-        <div className="bg-yellow-500/10 border border-yellow-500/30 rounded-3xl p-5">
+        <AppCard className="bg-yellow-500/10 border-yellow-500/30">
           <h2 className="font-black text-lg text-yellow-300 mb-2">
             Blast belum siap
           </h2>
+
           <p className="text-yellow-200 text-sm">
             Template dan target belum tersedia. Hubungi admin untuk menyiapkan data blast.
           </p>
-        </div>
+        </AppCard>
       )}
     </div>
   );

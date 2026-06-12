@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import api from "../../services/api";
+import { AppCard, AppBadge, PageHeader } from "../../components/ui";
 
 export default function Users() {
   const [users, setUsers] = useState([]);
@@ -26,44 +27,29 @@ export default function Users() {
 
   return (
     <div className="space-y-6 pb-28">
-      <div>
-        <h1 className="text-3xl md:text-5xl font-black">Users</h1>
-        <p className="text-slate-400 mt-2">
-          Pantau semua akun, device WhatsApp, dan aktivitas blast.
-        </p>
-      </div>
+      <PageHeader
+        title="Users"
+        subtitle="Pantau semua akun, device WhatsApp, dan aktivitas blast."
+      />
 
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
-        <Card title="Total User" value={users.length} />
-        <Card
-          title="Member"
-          value={users.filter((u) => u.role === "MEMBER").length}
-        />
-        <Card
-          title="Admin"
-          value={users.filter((u) => u.role === "ADMIN").length}
-        />
-        <Card
-          title="WA Connected"
-          value={users.reduce((a, u) => a + (u.connectedDevice || 0), 0)}
-        />
+        <Stat title="Total User" value={users.length} />
+        <Stat title="Member" value={users.filter((u) => u.role === "MEMBER").length} />
+        <Stat title="Admin" value={users.filter((u) => u.role === "ADMIN").length} />
+        <Stat title="WA Connected" value={users.reduce((a, u) => a + (u.connectedDevice || 0), 0)} />
       </div>
 
-      <div className="bg-slate-900 border border-slate-800 rounded-3xl p-4">
+      <AppCard>
         <input
           value={search}
           onChange={(e) => setSearch(e.target.value)}
           placeholder="Cari username..."
-          className="w-full bg-slate-800 border border-slate-700 rounded-2xl p-4 outline-none focus:border-green-500"
         />
-      </div>
+      </AppCard>
 
       <div className="space-y-4">
         {filtered.map((u) => (
-          <div
-            key={u.id}
-            className="bg-slate-900 border border-slate-800 rounded-3xl p-5"
-          >
+          <AppCard key={u.id}>
             <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
               <div>
                 <h2 className="text-xl font-black">{u.username}</h2>
@@ -72,7 +58,7 @@ export default function Users() {
                 </p>
               </div>
 
-              <Badge text={u.role} />
+              <AppBadge variant="success">{u.role}</AppBadge>
             </div>
 
             <div className="grid grid-cols-2 lg:grid-cols-5 gap-3 mt-5">
@@ -82,19 +68,19 @@ export default function Users() {
               <Mini label="Success" value={u.totalSuccess || 0} />
               <Mini label="Failed" value={u.totalFailed || 0} />
             </div>
-          </div>
+          </AppCard>
         ))}
       </div>
     </div>
   );
 }
 
-function Card({ title, value }) {
+function Stat({ title, value }) {
   return (
-    <div className="bg-slate-900 border border-slate-800 rounded-3xl p-5">
+    <AppCard>
       <p className="text-slate-400 text-sm">{title}</p>
       <h2 className="text-4xl font-black mt-3">{value}</h2>
-    </div>
+    </AppCard>
   );
 }
 
@@ -104,13 +90,5 @@ function Mini({ label, value }) {
       <p className="text-slate-400 text-xs">{label}</p>
       <h3 className="text-2xl font-black mt-1">{value}</h3>
     </div>
-  );
-}
-
-function Badge({ text }) {
-  return (
-    <span className="bg-green-500/20 text-green-400 px-4 py-2 rounded-xl font-bold text-sm">
-      {text}
-    </span>
   );
 }

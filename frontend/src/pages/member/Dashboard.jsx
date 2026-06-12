@@ -160,30 +160,50 @@ function AdminDashboard({ data }) {
 
 function Card({ title, value, icon }) {
   return (
-    <div className="bg-slate-900 border border-slate-800 rounded-3xl p-5">
+    <div className="app-card">
       <div className="flex justify-between items-center mb-5">
-        <p className="text-slate-400 text-sm">{title}</p>
-        <span className="text-2xl">{icon}</span>
+        <p className="text-slate-400 text-sm">
+          {title}
+        </p>
+
+        {icon && (
+          <span className="text-2xl">
+            {icon}
+          </span>
+        )}
       </div>
-      <h2 className="text-4xl font-black">{value}</h2>
+
+      <h2 className="text-4xl font-black">
+        {value}
+      </h2>
     </div>
   );
 }
 
 function Panel({ title, children }) {
   return (
-    <div className="bg-slate-900 border border-slate-800 rounded-3xl p-5">
-      <h2 className="text-xl font-black mb-5">{title}</h2>
-      <div className="space-y-4">{children}</div>
+    <div className="app-panel">
+      <h2 className="text-xl font-black mb-5">
+        {title}
+      </h2>
+
+      <div className="space-y-4">
+        {children}
+      </div>
     </div>
   );
 }
 
 function Row({ label, value, color }) {
   return (
-    <div className="bg-slate-800 rounded-2xl p-4 flex justify-between gap-4">
-      <span>{label}</span>
-      <strong className={color}>{value}</strong>
+    <div className="app-soft flex justify-between gap-4">
+      <span>
+        {label}
+      </span>
+
+      <strong className={color}>
+        {value}
+      </strong>
     </div>
   );
 }
@@ -191,15 +211,13 @@ function Row({ label, value, color }) {
 function Badge({ text, color }) {
   const cls =
     color === "green"
-      ? "bg-green-500/20 text-green-400"
+      ? "app-badge app-badge-success"
       : color === "red"
-      ? "bg-red-500/20 text-red-400"
-      : color === "blue"
-      ? "bg-blue-500/20 text-blue-400"
-      : "bg-slate-700 text-slate-300";
+      ? "app-badge app-badge-danger"
+      : "app-badge";
 
   return (
-    <span className={`px-3 py-2 rounded-xl font-bold ${cls}`}>
+    <span className={cls}>
       {text}
     </span>
   );

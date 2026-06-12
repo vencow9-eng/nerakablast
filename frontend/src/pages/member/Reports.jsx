@@ -88,23 +88,31 @@ function Card({ title, value }) {
 
 function Mini({ title, value }) {
   return (
-    <div className="bg-slate-800 rounded-2xl p-4 text-center">
-      <p className="text-slate-400 text-xs">{title}</p>
-      <h3 className="text-xl font-black">{value}</h3>
+    <div className="app-soft text-center">
+      <p className="text-slate-400 text-xs">
+        {title}
+      </p>
+
+      <h3 className="text-xl font-black">
+        {value}
+      </h3>
     </div>
   );
 }
 
 function Status({ status }) {
-  const color =
-    status === "COMPLETED"
-      ? "bg-green-500/20 text-green-400"
-      : status === "RUNNING"
-      ? "bg-yellow-500/20 text-yellow-400"
-      : "bg-red-500/20 text-red-400";
+  let cls = "app-badge";
+
+  if (status === "COMPLETED") {
+    cls += " app-badge-success";
+  } else if (status === "RUNNING") {
+    cls += " bg-yellow-500/20 text-yellow-300";
+  } else {
+    cls += " app-badge-danger";
+  }
 
   return (
-    <span className={`h-fit px-3 py-2 rounded-full text-xs font-black ${color}`}>
+    <span className={cls}>
       {status || "UNKNOWN"}
     </span>
   );

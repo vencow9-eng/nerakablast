@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import api from "../../services/api";
+import { AppCard, AppBadge, PageHeader } from "../../components/ui";
 
 export default function AdminDevices() {
   const [devices, setDevices] = useState([]);
@@ -26,32 +27,29 @@ export default function AdminDevices() {
 
   return (
     <div className="space-y-6 pb-28">
-      <div>
-        <h1 className="text-3xl md:text-5xl font-black">Admin Devices</h1>
-        <p className="text-slate-400 mt-2">
-          Pantau semua WhatsApp yang terhubung per akun.
-        </p>
-      </div>
+      <PageHeader
+        title="Admin Devices"
+        subtitle="Pantau semua WhatsApp yang terhubung per akun."
+      />
 
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
-        <Card title="Total Device" value={devices.length} />
-        <Card title="Connected" value={devices.filter((d) => d.status === "CONNECTED").length} />
-        <Card title="Disconnected" value={devices.filter((d) => d.status !== "CONNECTED").length} />
-        <Card title="User Aktif" value={new Set(devices.map((d) => d.userId)).size} />
+        <Stat title="Total Device" value={devices.length} />
+        <Stat title="Connected" value={devices.filter((d) => d.status === "CONNECTED").length} />
+        <Stat title="Disconnected" value={devices.filter((d) => d.status !== "CONNECTED").length} />
+        <Stat title="User Aktif" value={new Set(devices.map((d) => d.userId)).size} />
       </div>
 
-      <div className="bg-slate-900 border border-slate-800 rounded-3xl p-4">
+      <AppCard>
         <input
           value={search}
           onChange={(e) => setSearch(e.target.value)}
           placeholder="Cari username..."
-          className="w-full bg-slate-800 border border-slate-700 rounded-2xl p-4 outline-none focus:border-green-500"
         />
-      </div>
+      </AppCard>
 
       <div className="space-y-4">
         {filtered.map((d) => (
-          <div key={d.id} className="bg-slate-900 border border-slate-800 rounded-3xl p-5">
+          <AppCard key={d.id}>
             <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
               <div>
                 <h2 className="text-xl font-black">{d.username}</h2>
@@ -60,34 +58,28 @@ export default function AdminDevices() {
                 </p>
               </div>
 
-              <span
-                className={
-                  d.status === "CONNECTED"
-                    ? "bg-green-500/20 text-green-400 px-4 py-2 rounded-xl font-bold text-sm"
-                    : "bg-red-500/20 text-red-400 px-4 py-2 rounded-xl font-bold text-sm"
-                }
-              >
+              <AppBadge variant={d.status === "CONNECTED" ? "success" : "danger"}>
                 {d.status}
-              </span>
+              </AppBadge>
             </div>
 
             <div className="grid grid-cols-2 gap-3 mt-5">
               <Mini label="User ID" value={d.userId} />
               <Mini label="Role" value={d.role} />
             </div>
-          </div>
+          </AppCard>
         ))}
       </div>
     </div>
   );
 }
 
-function Card({ title, value }) {
+function Stat({ title, value }) {
   return (
-    <div className="bg-slate-900 border border-slate-800 rounded-3xl p-5">
+    <AppCard>
       <p className="text-slate-400 text-sm">{title}</p>
       <h2 className="text-4xl font-black mt-3">{value}</h2>
-    </div>
+    </AppCard>
   );
 }
 
