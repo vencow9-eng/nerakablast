@@ -1,4 +1,20 @@
-# RUPIAHBLAST
+# SEWAWAPRO
+
+Platform WhatsApp Blast Modern
+
+## Feature
+- WhatsApp Multi Device
+- Blast Target TXT
+- Template Management
+- Real Time Reports
+- Queue System
+- Dashboard Analytics
+
+## Stack
+Frontend:
+- React
+- Tailwind
+- Vite
 
 Backend:
 - Express
@@ -7,13 +23,3 @@ Backend:
 - BullMQ
 - Socket.IO
 - Baileys
-
-Frontend:
-- React
-
-Deployment:
-- PM2
-- Nginx
-
-Status:
-Backend hampir siap produksi
