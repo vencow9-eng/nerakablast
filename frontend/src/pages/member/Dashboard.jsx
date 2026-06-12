@@ -2,321 +2,99 @@ import { useEffect, useState } from "react";
 import api from "../../services/api";
 
 export default function Dashboard() {
+  const [data, setData] = useState(null);
 
-const [data, setData] = useState({
-totalUser: 0,
-totalStaff: 0,
-totalBlast: 0,
-totalDevice: 0,
-});
+  async function load() {
+    try {
+      const res = await api.get("/dashboard/member")
+      setData(res.data.data);
+    } catch (e) {
+      console.log(e);
+    }
+  }
 
-useEffect(() => {
+  useEffect(() => {
+    load();
+  }, []);
 
-load();
+  return (
+    <div className="space-y-6 pb-24">
+      <div>
+        <h1 className="text-3xl md:text-5xl font-black">Dashboard</h1>
+        <p className="text-slate-400 mt-2">
+          Pantau aktivitas SEWAWAPRO kamu secara realtime
+        </p>
+      </div>
 
-}, []);
+      <div className="bg-yellow-500/10 border border-yellow-500/30 rounded-2xl p-4 text-yellow-300 text-sm">
+        📢 Pastikan WhatsApp sudah connected sebelum mulai blast.
+      </div>
 
-async function load() {
+      <div className="bg-gradient-to-r from-green-500/20 to-emerald-500/10 border border-green-500/30 rounded-3xl p-5 flex items-center justify-between">
+        <div>
+          <h2 className="font-black text-lg">Mulai Blast Sekarang</h2>
+          <p className="text-slate-400 text-sm">
+            Buat target, pilih template, lalu jalankan blast
+          </p>
+        </div>
+        <a
+          href="/blast"
+          className="bg-green-500 px-4 py-3 rounded-xl font-bold"
+        >
+          Gas →
+        </a>
+      </div>
 
-try {
+      <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+        <Card title="Total User" value={data?.totalUser || 0} icon="👤" />
+        <Card title="Total Staff" value={data?.totalStaff || 0} icon="🧑‍💼" />
+        <Card title="Total Blast" value={data?.totalBlast || 0} icon="🚀" />
+        <Card title="Total Device" value={data?.totalDevice || 0} icon="📱" />
+      </div>
 
-const res =
-await api.get(
-"/dashboard/admin"
-);
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-5">
+        <Panel title="Blast Activity">
+          <Row label="Success" value="98%" color="text-green-400" />
+          <Row label="Failed" value="2%" color="text-red-400" />
+          <Row label="Connected" value={data?.totalDevice || 0} color="text-green-400" />
+        </Panel>
 
-setData(
-res.data.data
-);
-
-} catch {
-
-console.log(
-"dashboard error"
-);
-
+        <Panel title="Server Status">
+          <Row label="Backend" value="ONLINE" color="text-green-400" />
+          <Row label="Redis" value="ONLINE" color="text-green-400" />
+          <Row label="Queue" value="RUNNING" color="text-green-400" />
+        </Panel>
+      </div>
+    </div>
+  );
 }
 
+function Card({ title, value, icon }) {
+  return (
+    <div className="bg-slate-900 border border-slate-800 rounded-3xl p-5">
+      <div className="flex justify-between items-center mb-5">
+        <p className="text-slate-400 text-sm">{title}</p>
+        <span className="text-2xl">{icon}</span>
+      </div>
+      <h2 className="text-4xl font-black">{value}</h2>
+    </div>
+  );
 }
 
-return (
-
-<div>
-
-<div className="mb-10">
-
-<h1
-className="
-text-5xl
-font-black
-mb-3
-"
->
-
-Dashboard
-
-</h1>
-
-<p
-className="
-text-slate-400
-"
->
-
-Realtime analytics
-NERAKABLAST
-
-</p>
-
-</div>
-
-<div
-className="
-grid
-grid-cols-1
-md:grid-cols-2
-xl:grid-cols-4
-gap-6
-"
->
-
-<Card
-title="Total User"
-value={data.totalUser}
-icon="👤"
-/>
-
-<Card
-title="Total Staff"
-value={data.totalStaff}
-icon="🧑‍💼"
-/>
-
-<Card
-title="Total Blast"
-value={data.totalBlast}
-icon="🚀"
-/>
-
-<Card
-title="Total Device"
-value={data.totalDevice}
-icon="📱"
-/>
-
-</div>
-
-<div
-className="
-mt-10
-grid
-md:grid-cols-2
-gap-6
-"
->
-
-<div
-className="
-bg-slate-900
-rounded-3xl
-p-8
-border
-border-slate-800
-"
->
-
-<h2
-className="
-text-2xl
-font-bold
-mb-6
-"
->
-
-Blast Activity
-
-</h2>
-
-<div className="space-y-4">
-
-<Row
-title="Success"
-value="98%"
-/>
-
-<Row
-title="Failed"
-value="2%"
-/>
-
-<Row
-title="Connected"
-value={`${data.totalDevice}`}
-/>
-
-</div>
-
-</div>
-
-<div
-className="
-bg-slate-900
-rounded-3xl
-p-8
-border
-border-slate-800
-"
->
-
-<h2
-className="
-text-2xl
-font-bold
-mb-6
-"
->
-
-Server Status
-
-</h2>
-
-<div className="space-y-4">
-
-<Row
-title="Backend"
-value="ONLINE"
-/>
-
-<Row
-title="Redis"
-value="ONLINE"
-/>
-
-<Row
-title="Queue"
-value="RUNNING"
-/>
-
-</div>
-
-</div>
-
-</div>
-
-</div>
-
-)
-
+function Panel({ title, children }) {
+  return (
+    <div className="bg-slate-900 border border-slate-800 rounded-3xl p-5">
+      <h2 className="text-xl font-black mb-5">{title}</h2>
+      <div className="space-y-4">{children}</div>
+    </div>
+  );
 }
 
-function Card({
-title,
-value,
-icon,
-}) {
-
-return (
-
-<div
-className="
-bg-slate-900
-rounded-3xl
-p-8
-border
-border-slate-800
-hover:border-green-500
-transition
-"
->
-
-<div
-className="
-flex
-justify-between
-items-center
-"
->
-
-<div>
-
-<p
-className="
-text-slate-400
-"
->
-
-{title}
-
-</p>
-
-<h2
-className="
-text-5xl
-font-black
-mt-4
-"
->
-
-{value}
-
-</h2>
-
-</div>
-
-<div
-className="
-text-4xl
-"
->
-
-{icon}
-
-</div>
-
-</div>
-
-</div>
-
-)
-
-}
-
-function Row({
-title,
-value,
-}) {
-
-return (
-
-<div
-className="
-flex
-justify-between
-bg-slate-800
-p-4
-rounded-xl
-"
->
-
-<span>
-
-{title}
-
-</span>
-
-<span
-className="
-font-bold
-text-green-400
-"
->
-
-{value}
-
-</span>
-
-</div>
-
-)
-
+function Row({ label, value, color }) {
+  return (
+    <div className="bg-slate-800 rounded-2xl p-4 flex justify-between">
+      <span>{label}</span>
+      <strong className={color}>{value}</strong>
+    </div>
+  );
 }

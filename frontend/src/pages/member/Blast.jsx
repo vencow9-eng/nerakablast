@@ -6,52 +6,190 @@ export default function Blast() {
   const [targets, setTargets] = useState([]);
   const [templateId, setTemplateId] = useState("");
   const [targetId, setTargetId] = useState("");
+  const [speed, setSpeed] = useState("medium");
+  const [loading, setLoading] = useState(false);
+  const [runningId, setRunningId] = useState(null);
+
+  const speedOptions = [
+    { value: "slow", label: "Slow", desc: "Lebih aman, jeda panjang" },
+    { value: "medium", label: "Medium", desc: "Rekomendasi standar" },
+    { value: "fast", label: "Fast", desc: "Lebih cepat" },
+    { value: "very_fast", label: "Very Fast", desc: "Cepat, risiko lebih tinggi" },
+  ];
 
   async function load() {
-    const t = await api.get("/templates");
-    const g = await api.get("/targets");
+    try {
+      const t = await api.get("/templates");
+      const g = await api.get("/targets");
+      const r = await api.get("/reports");
 
-    setTemplates(t.data.data || []);
-    setTargets(g.data.data || []);
+      const templateData = t.data.data || [];
+      const targetData = g.data.data || [];
+      const reportData = r.data.data || [];
 
-    if (t.data.data?.[0]) setTemplateId(t.data.data[0].id);
-    if (g.data.data?.[0]) setTargetId(g.data.data[0].id);
+      setTemplates(templateData);
+      setTargets(targetData);
+
+      if (templateData.length > 0 && !templateId) {
+        setTemplateId(String(templateData[0].id));
+      }
+
+      if (targetData.length > 0 && !targetId) {
+        setTargetId(String(targetData[0].id));
+      }
+
+      const running = reportData.find((x) => x.status === "RUNNING" || x.status === "PENDING");
+
+      if (running) {
+        setRunningId(running.id);
+      } else {
+        setRunningId(null);
+      }
+    } catch (e) {
+      console.log(e);
+    }
   }
 
   async function start() {
-    await api.post("/blasts/start", {
-      templateId: Number(templateId),
-      targetId: Number(targetId),
-    });
+    if (!templateId || !targetId) {
+      alert("Template atau target belum disiapkan admin");
+      return;
+    }
 
-    alert("Blast dimulai");
+    try {
+      setLoading(true);
+
+      const res = await api.post("/blasts/start", {
+        templateId: Number(templateId),
+        targetId: Number(targetId),
+        speed,
+      });
+
+      const blastId = res.data?.data?.blast?.id;
+
+      if (blastId) {
+        setRunningId(blastId);
+      }
+
+      alert("Blast dimulai");
+      await load();
+    } catch (e) {
+      alert(e.response?.data?.message || "Gagal mulai blast");
+    } finally {
+      setLoading(false);
+    }
+  }
+
+  async function stop() {
+    if (!runningId) return;
+
+    try {
+      setLoading(true);
+
+      await api.post(`/blasts/${runningId}/stop`);
+
+      setRunningId(null);
+      alert("Blast dihentikan");
+      await load();
+    } catch (e) {
+      alert(e.response?.data?.message || "Gagal stop blast");
+    } finally {
+      setLoading(false);
+    }
+  }
+
+  async function handleMainButton() {
+    if (runningId) {
+      await stop();
+    } else {
+      await start();
+    }
   }
 
   useEffect(() => {
     load();
+
+    const timer = setInterval(load, 4000);
+
+    return () => clearInterval(timer);
   }, []);
 
+  const ready = templates.length > 0 && targets.length > 0;
+
   return (
-    <div>
-      <h1 style={{ color: "white" }}>Blast</h1>
+    <div className="space-y-6 pb-28 overflow-x-hidden">
+      <div>
+        <h1 className="text-3xl sm:text-5xl font-black">Blast</h1>
+        <p className="text-slate-400 text-sm mt-1">
+          Tekan tombol untuk menjalankan blast dari WhatsApp kamu
+        </p>
+      </div>
 
-      <div style={{ background: "white", padding: 30, borderRadius: 20 }}>
-        <select value={templateId} onChange={(e) => setTemplateId(e.target.value)} style={{ width: "100%", padding: 14 }}>
-          {templates.map((t) => (
-            <option key={t.id} value={t.id}>{t.title}</option>
-          ))}
-        </select>
+      <div className="bg-slate-900 border border-slate-800 rounded-3xl p-5 space-y-5">
+        <div
+          className={
+            runningId
+              ? "bg-red-500/10 border border-red-500/30 rounded-2xl p-5"
+              : "bg-green-500/10 border border-green-500/30 rounded-2xl p-5"
+          }
+        >
+          <h2 className="text-xl font-black mb-2">
+            {runningId ? "Blast Sedang Berjalan" : "Siap Mulai Blast"}
+          </h2>
 
-        <select value={targetId} onChange={(e) => setTargetId(e.target.value)} style={{ width: "100%", padding: 14, marginTop: 12 }}>
-          {targets.map((t) => (
-            <option key={t.id} value={t.id}>{t.name}</option>
-          ))}
-        </select>
+          <p className="text-slate-400 text-sm">
+            {runningId
+              ? "Tekan tombol Stop Blast untuk menghentikan pengiriman nomor berikutnya."
+              : "Pastikan WhatsApp sudah CONNECTED sebelum menjalankan blast."}
+          </p>
+        </div>
 
-        <button onClick={start} style={{ marginTop: 20, background: "#16a34a", color: "white", border: 0, padding: 14, borderRadius: 10 }}>
-          Mulai Blast
+        <div>
+          <label className="block text-sm font-bold mb-2">
+            Kecepatan Blast
+          </label>
+
+          <select
+            value={speed}
+            onChange={(e) => setSpeed(e.target.value)}
+            disabled={!!runningId}
+            className="w-full bg-slate-800 border border-slate-700 rounded-xl p-4 outline-none focus:border-green-500 disabled:opacity-60"
+          >
+            {speedOptions.map((s) => (
+              <option key={s.value} value={s.value}>
+                {s.label} - {s.desc}
+              </option>
+            ))}
+          </select>
+        </div>
+
+        <button
+          onClick={handleMainButton}
+          disabled={loading || (!ready && !runningId)}
+          className={
+            runningId
+              ? "w-full bg-red-500 hover:bg-red-600 disabled:bg-slate-700 disabled:text-slate-400 rounded-2xl p-5 font-black text-lg"
+              : "w-full bg-green-500 hover:bg-green-600 disabled:bg-slate-700 disabled:text-slate-400 rounded-2xl p-5 font-black text-lg"
+          }
+        >
+          {loading
+            ? "Memproses..."
+            : runningId
+            ? "⛔ Stop Blast"
+            : "🚀 Mulai Blast Sekarang"}
         </button>
       </div>
+
+      {!ready && (
+        <div className="bg-yellow-500/10 border border-yellow-500/30 rounded-3xl p-5">
+          <h2 className="font-black text-lg text-yellow-300 mb-2">
+            Blast belum siap
+          </h2>
+          <p className="text-yellow-200 text-sm">
+            Template dan target belum tersedia. Hubungi admin untuk menyiapkan data blast.
+          </p>
+        </div>
+      )}
     </div>
   );
 }

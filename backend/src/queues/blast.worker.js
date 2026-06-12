@@ -1,18 +1,31 @@
-const { Worker } = require("bullmq");
+require("dotenv").config();
 
+const { Worker } = require("bullmq");
 const redis = require("../config/redis");
 const prisma = require("../config/database");
-const { getIO } = require("../config/socket");
+const whatsapp = require("../modules/whatsapp/service");
+
+let io = null;
+
+try {
+  const socketConfig = require("../config/socket");
+  io = socketConfig.getIO ? socketConfig.getIO() : null;
+} catch (e) {
+  io = null;
+}
+
+function emitProgress(data) {
+  if (io) {
+    io.emit("blast:progress", data);
+  }
+}
 
 const worker = new Worker(
   "blastQueue",
-
   async (job) => {
-    const io = getIO();
-
     const { blastId } = job.data;
 
-    console.log(`START BLAST #${blastId}`);
+    console.log("START BLAST #" + blastId);
 
     const blast = await prisma.blast.findUnique({
       where: {
@@ -34,91 +47,135 @@ const worker = new Worker(
       },
       data: {
         status: "RUNNING",
+        success: 0,
+        failed: 0,
       },
     });
 
-    io.emit("blast:update", {
-      id: blast.id,
-      status: "RUNNING",
+    const device = await prisma.device.findFirst({
+      where: {
+        userId: blast.userId,
+        status: "CONNECTED",
+      },
+      orderBy: {
+        id: "desc",
+      },
     });
 
-    const phones = blast.target.phones
+    if (!device) {
+      await prisma.blast.update({
+        where: {
+          id: blast.id,
+        },
+        data: {
+          status: "FAILED",
+        },
+      });
+
+      throw new Error("Tidak ada device WhatsApp CONNECTED");
+    }
+
+    const phones = String(blast.target?.phones || "")
       .split(",")
-      .map((v) => v.trim())
+      .map((x) => x.trim())
       .filter(Boolean);
 
     let success = 0;
     let failed = 0;
 
-    for (let i = 0; i < phones.length; i++) {
-      const phone = phones[i];
+    for (const phone of phones) {
+      const currentBlast = await prisma.blast.findUnique({
+        where: {
+          id: blast.id,
+        },
+      });
 
-      try {
-        console.log(`SEND -> ${phone}`);
+      if (currentBlast?.status === "STOPPED") {
+        console.log("BLAST STOPPED #" + blast.id);
 
-        /*
-          NEXT:
-          nanti diganti kirim WA real:
-
-          await whatsapp.sendMessage(
-            device,
-            phone,
-            blast.template.message
-          );
-        */
-
-        await new Promise((r) => setTimeout(r, 1500));
-
-        success++;
-
-        await prisma.blast.update({
-          where: {
-            id: blast.id,
-          },
-          data: {
-            success,
-            failed,
-            status: "RUNNING",
-          },
-        });
-
-        io.emit("blast:progress", {
+        emitProgress({
           blastId: blast.id,
-          total: phones.length,
-          current: i + 1,
           success,
           failed,
-          percent: Math.round(((i + 1) / phones.length) * 100),
+          total: phones.length,
+          status: "STOPPED",
         });
 
-        console.log(
-          `[${i + 1}/${phones.length}] SUCCESS`
-        );
-      } catch (err) {
-        failed++;
-
-        console.log(
-          `[${i + 1}/${phones.length}] FAILED`,
-          err.message
-        );
-
-        await prisma.blast.update({
-          where: {
-            id: blast.id,
-          },
-          data: {
-            success,
-            failed,
-          },
-        });
-
-        io.emit("blast:error", {
+        return {
           blastId: blast.id,
-          phone,
-          error: err.message,
-        });
+          success,
+          failed,
+          stopped: true,
+        };
       }
+
+      try {
+        console.log("SEND TO", phone);
+
+        await whatsapp.sendMessage(
+          device.id,
+          phone,
+          blast.template.message
+        );
+
+        success++;
+      } catch (e) {
+        console.log("FAILED SEND", phone, e.message);
+        failed++;
+      }
+
+      await prisma.blast.update({
+        where: {
+          id: blast.id,
+        },
+        data: {
+          success,
+          failed,
+          status: "RUNNING",
+        },
+      });
+
+      emitProgress({
+        blastId: blast.id,
+        phone,
+        success,
+        failed,
+        total: phones.length,
+        status: "RUNNING",
+      });
+
+      const latestBlast = await prisma.blast.findUnique({
+        where: {
+          id: blast.id,
+        },
+      });
+
+      if (latestBlast?.status === "STOPPED") {
+        console.log("BLAST STOPPED AFTER SEND #" + blast.id);
+
+        emitProgress({
+          blastId: blast.id,
+          success,
+          failed,
+          total: phones.length,
+          status: "STOPPED",
+        });
+
+        return {
+          blastId: blast.id,
+          success,
+          failed,
+          stopped: true,
+        };
+      }
+
+      await new Promise((resolve) =>
+        setTimeout(resolve, blast.delayMs || 15000)
+      );
     }
+
+    const finalStatus =
+      failed > 0 && success === 0 ? "FAILED" : "COMPLETED";
 
     await prisma.blast.update({
       where: {
@@ -127,66 +184,43 @@ const worker = new Worker(
       data: {
         success,
         failed,
-        status: "COMPLETED",
+        status: finalStatus,
       },
     });
 
-    io.emit("blast:completed", {
+    emitProgress({
       blastId: blast.id,
       success,
       failed,
+      total: phones.length,
+      status: finalStatus,
     });
 
-    console.log(`DONE BLAST #${blast.id}`);
+    console.log("BLAST FINISHED #" + blast.id + " " + finalStatus);
 
     return {
-      blastId,
-      total: phones.length,
+      blastId: blast.id,
       success,
       failed,
+      status: finalStatus,
     };
   },
-
   {
     connection: redis,
-
-    concurrency: 1,
-
-    removeOnComplete: {
-      count: 50,
-    },
-
-    removeOnFail: {
-      count: 20,
-    },
   }
 );
 
 worker.on("completed", (job) => {
-  console.log(
-    `JOB ${job.id} COMPLETED`
-  );
+  console.log("Blast completed:", job.id);
 });
 
 worker.on("failed", (job, err) => {
-  console.log(
-    `JOB ${job?.id} FAILED`,
-    err.message
-  );
-});
-
-worker.on("error", (err) => {
-  console.log(
-    "WORKER ERROR:",
-    err.message
-  );
+  console.log("Blast failed:", job?.id, err.message);
 });
 
 process.on("SIGINT", async () => {
   console.log("Closing worker...");
-
   await worker.close();
-
   process.exit(0);
 });
 

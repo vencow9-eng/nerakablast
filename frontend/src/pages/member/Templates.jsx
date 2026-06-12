@@ -2,255 +2,275 @@ import { useEffect, useState } from "react";
 import api from "../../services/api";
 
 export default function Templates() {
-  const [templates, setTemplates] = useState([]);
 
-  const [title, setTitle] =
-    useState("");
+const [title,setTitle]=useState("");
+const [message,setMessage]=useState("");
 
-  const [message, setMessage] =
-    useState("");
+const [templates,setTemplates]=useState([]);
 
-  async function load() {
-    try {
-      const res =
-        await api.get(
-          "/templates"
-        );
+async function load(){
+try{
+const r=await api.get("/templates");
+setTemplates(r.data.data||[]);
+}catch{}
+}
 
-      setTemplates(
-        res.data.data || []
-      );
-    } catch {}
-  }
+useEffect(()=>{
+load();
+},[]);
 
-  async function create() {
-    try {
-      await api.post(
-        "/templates",
-        {
-          title,
-          message,
-        }
-      );
+async function save(){
 
-      setTitle("");
-      setMessage("");
+if(!title||!message){
+return alert("Lengkapi data");
+}
 
-      load();
+await api.post("/templates",{
+title,
+message,
+});
 
-    } catch {
-      alert("gagal");
-    }
-  }
+setTitle("");
+setMessage("");
 
-  async function remove(id) {
-    try {
-      await api.delete(
-        `/templates/${id}`
-      );
+load();
 
-      load();
+}
 
-    } catch {}
-  }
+async function remove(id){
 
-  useEffect(() => {
-    load();
-  }, []);
+if(!confirm("Hapus template?"))
+return;
 
-  return (
-    <div>
+await api.delete(`/templates/${id}`);
 
-      <div
-        style={{
-          display: "flex",
-          justifyContent:
-            "space-between",
-          marginBottom: 30,
-        }}
-      >
+load();
 
-        <div>
+}
 
-          <h1
-            style={{
-              color:
-                "white",
-            }}
-          >
-            Templates
-          </h1>
+return(
 
-          <p
-            style={{
-              color:
-                "#64748b",
-            }}
-          >
-            Kelola template
-          </p>
+<div className="space-y-5 pb-32">
 
-        </div>
+<div>
 
-      </div>
+<h1 className="text-3xl font-black">
+Templates
+</h1>
 
-      <div
-        style={{
-          background:
-            "white",
+<p className="text-slate-400">
+Kelola pesan blast
+</p>
 
-          padding: 30,
+</div>
 
-          borderRadius:
-            20,
+<div className="bg-slate-900 rounded-3xl p-5 space-y-4">
 
-          marginBottom:
-            30,
-        }}
-      >
+<input
+placeholder="Nama Template"
+value={title}
+onChange={(e)=>setTitle(e.target.value)}
+className="
+w-full
+bg-slate-800
+rounded-2xl
+p-4
+outline-none
+"
+/>
 
-        <input
-          placeholder="Judul"
-          value={title}
-          onChange={(e) =>
-            setTitle(
-              e.target.value
-            )
-          }
-          style={{
-            width:
-              "100%",
-            padding:
-              14,
-            marginBottom:
-              12,
-          }}
-        />
+<textarea
+rows={7}
+value={message}
+onChange={(e)=>setMessage(e.target.value)}
+placeholder={`Halo {nama}
 
-        <textarea
-          placeholder="Pesan"
+Promo hari ini
 
-          rows={5}
+Hubungi:
+{nomor}`}
+className="
+w-full
+bg-slate-800
+rounded-2xl
+p-4
+outline-none
+"
+/>
 
-          value={message}
+<div
+className="
+bg-[#0B141A]
+rounded-3xl
+p-5
+"
+>
 
-          onChange={(e) =>
-            setMessage(
-              e.target.value
-            )
-          }
+<div
+className="
+bg-[#202C33]
+rounded-2xl
+p-4
+max-w-[85%]
+"
+>
 
-          style={{
-            width:
-              "100%",
+<p className="text-sm text-slate-200 whitespace-pre-wrap">
 
-            padding:
-              14,
-          }}
-        />
+{
+message||
 
-        <button
-          onClick={
-            create
-          }
-          style={{
-            marginTop:
-              20,
+"Preview pesan tampil disini"
 
-            background:
-              "#16a34a",
+}
 
-            color:
-              "white",
+</p>
 
-            border:
-              0,
+<div
+className="
+text-green-400
+text-right
+text-xs
+mt-2
+"
+>
 
-            padding:
-              "12px 20px",
+✓✓
 
-            borderRadius:
-              10,
-          }}
-        >
-          Simpan
-        </button>
+</div>
 
-      </div>
+</div>
 
-      <div
-        style={{
-          display:
-            "grid",
+</div>
 
-          gap: 20,
-        }}
-      >
+<div className="flex gap-3">
 
-        {templates.map(
-          (
-            t
-          ) => (
-            <div
-              key={
-                t.id
-              }
-              style={{
-                background:
-                  "white",
+<button
+onClick={save}
+className="
+flex-1
+bg-green-500
+rounded-2xl
+p-4
+font-black
+"
+>
 
-                padding:
-                  24,
+Simpan
 
-                borderRadius:
-                  18,
-              }}
-            >
+</button>
 
-              <h3>
-                {
-                  t.title
-                }
-              </h3>
+<button
+onClick={()=>
+navigator.clipboard.writeText(message)
+}
+className="
+bg-slate-700
+px-5
+rounded-2xl
+"
+>
 
-              <p>
-                {
-                  t.message
-                }
-              </p>
+Copy
 
-              <button
-                onClick={() =>
-                  remove(
-                    t.id
-                  )
-                }
-                style={{
-                  background:
-                    "#ef4444",
+</button>
 
-                  color:
-                    "white",
+</div>
 
-                  border:
-                    0,
+</div>
 
-                  padding:
-                    10,
+<div className="space-y-4">
 
-                  borderRadius:
-                    10,
-                }}
-              >
-                Hapus
-              </button>
+{
 
-            </div>
-          )
-        )}
+templates.map((t)=>(
 
-      </div>
+<div
+key={t.id}
+className="
+bg-slate-900
+rounded-3xl
+p-5
+"
+>
 
-    </div>
-  );
+<div
+className="
+flex
+justify-between
+items-center
+mb-4
+"
+>
+
+<div>
+
+<h2 className="font-black">
+
+{t.title}
+
+</h2>
+
+<div
+className="
+text-green-400
+text-sm
+"
+>
+
+Aktif
+
+</div>
+
+</div>
+
+<button
+onClick={()=>remove(t.id)}
+className="
+bg-red-500
+rounded-xl
+px-4
+py-2
+"
+>
+
+Hapus
+
+</button>
+
+</div>
+
+<div
+className="
+bg-[#202C33]
+rounded-2xl
+p-4
+"
+>
+
+<pre
+className="
+whitespace-pre-wrap
+font-sans
+"
+>
+
+{t.message}
+
+</pre>
+
+</div>
+
+</div>
+
+))
+
+}
+
+</div>
+
+</div>
+
+);
+
 }

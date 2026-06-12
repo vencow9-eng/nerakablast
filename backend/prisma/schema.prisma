@@ -93,6 +93,8 @@ model Blast {
   failed     Int         @default(0)
   status     BlastStatus @default(PENDING)
   createdAt  DateTime    @default(now())
+  speed String @default("medium")
+  delayMs Int @default(15000)
 
   user     User     @relation(fields: [userId], references: [id])
   template Template @relation(fields: [templateId], references: [id])
