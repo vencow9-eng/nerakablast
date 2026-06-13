@@ -13,17 +13,13 @@ export default function DashboardLayout() {
   try {
     if (token) {
       const payload = JSON.parse(atob(token.split(".")[1]));
-
       user = {
         username: payload.username || payload.name || "member",
         role: payload.role || "MEMBER",
       };
     }
   } catch (e) {
-    user = {
-      username: "member",
-      role: "MEMBER",
-    };
+    user = { username: "member", role: "MEMBER" };
   }
 
   function logout() {
@@ -31,118 +27,162 @@ export default function DashboardLayout() {
     window.location.href = "/";
   }
 
-const allMenus = [
-  { to: "/dashboard", label: "Dashboard", icon: "🏠", roles: ["ADMIN", "STAFF", "MEMBER"] },
-  { to: "/whatsapp", label: "WhatsApp", icon: "📱", roles: ["ADMIN", "STAFF", "MEMBER"] },
-  { to: "/users", label: "Users", icon: "👥", roles: ["ADMIN"] },
-  { to: "/admin-devices", label: "Admin Devices", icon: "📡", roles: ["ADMIN"] },
-  { to: "/admin-reports", label: "Admin Reports", icon: "📈", roles: ["ADMIN"] },
-  { to: "/templates", label: "Templates", icon: "📝", roles: ["ADMIN", "STAFF"] },
-  { to: "/targets", label: "Targets", icon: "🎯", roles: ["ADMIN", "STAFF"] },
-  { to: "/blast", label: "Blast", icon: "🚀", roles: ["ADMIN", "STAFF", "MEMBER"] },
-  { to: "/reports", label: "Reports", icon: "📊", roles: ["ADMIN", "STAFF", "MEMBER"] },
-  { to: "/settings", label: "Settings", icon: "⚙️", roles: ["ADMIN"] },
-];
+  const allMenus = [
+    { to: "/dashboard",     label: "Dashboard",     icon: "ti-layout-dashboard",  roles: ["ADMIN","STAFF","MEMBER"] },
+    { to: "/whatsapp",      label: "WhatsApp",      icon: "ti-brand-whatsapp",    roles: ["ADMIN","STAFF","MEMBER"] },
+    { to: "/users",         label: "Users",          icon: "ti-users",             roles: ["ADMIN"] },
+    { to: "/admin-devices", label: "Admin Devices",  icon: "ti-device-mobile",     roles: ["ADMIN"] },
+    { to: "/admin-reports", label: "Admin Reports",  icon: "ti-report-analytics",  roles: ["ADMIN"] },
+    { to: "/templates",     label: "Templates",      icon: "ti-template",          roles: ["ADMIN","STAFF"] },
+    { to: "/targets",       label: "Targets",        icon: "ti-target",            roles: ["ADMIN","STAFF"] },
+    { to: "/blast",         label: "Blast",          icon: "ti-rocket",            roles: ["ADMIN","STAFF","MEMBER"] },
+    { to: "/reports",       label: "Reports",        icon: "ti-chart-bar",         roles: ["ADMIN","STAFF","MEMBER"] },
+    { to: "/settings",      label: "Settings",       icon: "ti-settings",          roles: ["ADMIN"] },
+  ];
 
-const menus = allMenus.filter((m) => m.roles.includes(user.role));
+  const menus = allMenus.filter((m) => m.roles.includes(user.role));
+
+  // Ambil 2 huruf pertama username untuk avatar
+  const avatarInitials = user.username.slice(0, 2).toUpperCase();
+
+  // Label breadcrumb berdasarkan path aktif
+  const activeMenu = allMenus.find((m) => m.to === location.pathname);
+  const pageLabel = activeMenu ? activeMenu.label : "Dashboard";
 
   return (
-    <div className="min-h-screen bg-slate-950 text-white">
+    <div className="app-root">
 
-      <aside className="hidden lg:flex fixed left-0 top-0 h-screen w-[260px] bg-slate-900 border-r border-slate-800 flex-col">
-<div className="p-5 border-b border-slate-800 flex items-center justify-center">
-  <img
-    src="/assets/logo-sewa-wa.png"
-    alt="SEWAWAPRO"
-    className="h-16 w-auto max-w-[210px] object-contain"
-  />
-</div>
+      {/* ── SIDEBAR DESKTOP ── */}
+      <aside className="app-sidebar hidden lg:flex flex-col">
 
-        <nav className="flex flex-col gap-2 px-4 py-6">
+        {/* Logo */}
+        <div className="sidebar-logo">
+          <img
+            src="/assets/logo-sewa-wa.png"
+            alt="SEWAWAPRO"
+            style={{ height: "44px", width: "auto", maxWidth: "160px", objectFit: "contain" }}
+            onError={(e) => {
+              e.target.style.display = "none";
+              e.target.nextSibling.style.display = "block";
+            }}
+          />
+          <span style={{ display: "none" }}>
+            SEWAWA<span>PRO</span>
+          </span>
+        </div>
+
+        {/* Nav links */}
+        <nav className="sidebar-nav">
           {menus.map((m) => (
             <Link
               key={m.to}
               to={m.to}
-              className={`p-3 rounded-xl ${
-                location.pathname === m.to
-                  ? "bg-slate-800 text-green-400"
-                  : "hover:bg-slate-800"
+              className={`app-menu-link ${
+                location.pathname === m.to ? "app-menu-active" : ""
               }`}
             >
-              {m.icon} {m.label}
+              <i className={`ti ${m.icon} nav-icon`} aria-hidden="true" />
+              {m.label}
             </Link>
           ))}
         </nav>
 
-        <div className="mt-auto p-5">
-          <div className="bg-slate-800 p-4 rounded-2xl mb-4">
-            <div className="font-bold">
-              {user.username}
-            </div>
-            <div className="text-slate-400 text-sm">
-              {user.role}
+        {/* User block + logout */}
+        <div className="sidebar-footer">
+          <div className="sidebar-user">
+            <div className="sidebar-avatar">{avatarInitials}</div>
+            <div>
+              <div className="sidebar-user-name">{user.username}</div>
+              <div className="sidebar-user-role">{user.role}</div>
             </div>
           </div>
-
-          <button
-            onClick={logout}
-            className="w-full bg-red-500 hover:bg-red-600 py-3 rounded-xl font-semibold"
-          >
+          <button onClick={logout} className="btn-danger">
+            <i className="ti ti-logout" aria-hidden="true" style={{ fontSize: "13px" }} />
             Logout
           </button>
         </div>
       </aside>
 
-      <section className="lg:ml-[260px] min-h-screen">
-        <header className="sticky top-0 z-30 h-[70px] bg-slate-950/95 backdrop-blur border-b border-slate-800 flex items-center justify-between px-5 lg:px-10">
+      {/* ── MAIN AREA ── */}
+      <section
+        className="flex flex-col"
+        style={{ flex: 1, minWidth: 0, overflow: "hidden" }}
+      >
+
+        {/* Topbar */}
+        <header className="app-topbar">
+
+          {/* Mobile: logo + username */}
           <div className="flex items-center gap-3 lg:hidden">
-            <div className="w-10 h-10 rounded-xl bg-green-500 flex items-center justify-center font-black">
+            <div
+              style={{
+                width: "34px",
+                height: "34px",
+                borderRadius: "var(--radius-sm)",
+                background: "var(--app-accent)",
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center",
+                fontWeight: 800,
+                fontSize: "13px",
+                color: "#021008",
+                flexShrink: 0,
+              }}
+            >
               S
             </div>
-
             <div>
-              <h1 className="font-black text-lg">
+              <div style={{ fontSize: "13px", fontWeight: 700, color: "var(--app-text)" }}>
                 SEWAWAPRO
-              </h1>
-              <p className="text-xs text-slate-400">
+              </div>
+              <div style={{ fontSize: "11px", color: "var(--app-muted)" }}>
                 {user.username}
-              </p>
+              </div>
             </div>
           </div>
 
-          <h2 className="hidden lg:block text-2xl font-bold">
-            Dashboard
-          </h2>
+          {/* Desktop: breadcrumb */}
+          <div className="topbar-breadcrumb hidden lg:block">
+            Dashboard / <strong>{pageLabel}</strong>
+          </div>
 
-          <Link
-            to="/blast"
-            className="bg-green-500 hover:bg-green-600 px-4 py-3 rounded-xl font-bold text-sm"
-          >
-            + Blast
-          </Link>
+          {/* Right actions */}
+          <div className="topbar-actions">
+            <button className="topbar-icon-btn hidden lg:flex" title="Notifikasi" aria-label="Notifikasi">
+              <i className="ti ti-bell" aria-hidden="true" />
+            </button>
+            <Link
+              to="/blast"
+              className="btn-primary"
+            >
+              <i className="ti ti-rocket" aria-hidden="true" style={{ fontSize: "13px" }} />
+              + Blast
+            </Link>
+          </div>
         </header>
 
-        <main className="p-5 lg:p-10 pb-28 overflow-x-hidden">
+        {/* Page content */}
+        <main className="app-content" style={{ paddingBottom: "env(safe-area-inset-bottom, 80px)" }}>
           <Outlet />
         </main>
       </section>
 
-      <nav className="lg:hidden fixed bottom-0 left-0 right-0 z-50 bg-slate-900 border-t border-slate-800 grid grid-cols-5 px-2 py-2">
+      {/* ── MOBILE BOTTOM NAV ── */}
+      <nav className="app-mobile-nav lg:hidden">
         {menus.slice(0, 5).map((m) => (
           <Link
             key={m.to}
             to={m.to}
-            className={`flex flex-col items-center justify-center gap-1 py-2 rounded-xl text-[11px] ${
-              location.pathname === m.to
-                ? "bg-slate-800 text-green-400"
-                : "text-slate-400"
+            className={`mobile-nav-item ${
+              location.pathname === m.to ? "active" : ""
             }`}
           >
-            <span className="text-lg">{m.icon}</span>
+            <i className={`ti ${m.icon}`} aria-hidden="true" />
             <span>{m.label}</span>
           </Link>
         ))}
       </nav>
+
     </div>
   );
 }
